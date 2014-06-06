@@ -1,6 +1,12 @@
 package scc
 
-// import "log"
+import (
+    "bufio"
+    "log"
+    "os"
+    "strings"
+    "strconv"
+)
 
 // Directed edge in a graph
 type Edge struct {
@@ -9,7 +15,44 @@ type Edge struct {
 }
 
 // Graphs are simply lists of directed edges
-type Graph []Edge
+type Graph struct {
+    edges []Edge
+    vertices map[int]bool
+}
+
+func NewGraph(e []Edges) *Graph {
+    g := new(Graph)
+    g.edges = e
+    for _, v := range e {
+        g.vertices[v] = false
+    }
+}
+
+func NewGraphFromFile(fn string) *Graph {
+    e := EdgeListFromFile(fn)
+    return NewGraph(e)
+}
+
+func EdgeListFromFile(fn string) (e []Edge) {
+    f, err := os.Open(fn)
+    eof := false
+    for _, line, err := range bufio.ScanLines(f, eof) {
+        if err != nil {
+            eof = true
+        }
+        t, h := strings.split(line, " ")
+        t, err = strconv.Atoi(t)
+        h, err = strconv.Atoi(h)
+        e = append(e, {tail: t,
+                       head: h,
+                      }
+                  )
+        if err != nil {
+            log.Print(err)
+        }
+        err = nil
+    }
+}
 
 // VertQueue is a simple FIFO queue of vertex references
 type VertQueue []int
@@ -28,31 +71,27 @@ func (v *VertQueue) Pop() int {
 }
 
 // FindSCC locates all Stongly connected components in an input graph
-func (g Graph) FindSCC() (components []Graph) {
+func (g *Graph) FindSCC() (s []Graph) {
     // Map keeps track of all vertices that have been visited.
     // If it's visited, it's in the finish map with value 0.
     // If it's finished (i.e. all arcs have been explored),
     // the value of finish[int] == the rank of finishing
-    // finish := make(map[int]int)
+    q := g.DepthFirstRev()
+    // Finish times order is encoded in order of the queue.
+    return
+}
+
+func (g Graph) DepthFirstRev() (q VertQueue){
+    q = make(VerQueue, len(g)
+    for _, e := range g {
+        vertex := e.head
+        arc := e.tail
+    }
     return
 }
 
 /*
-func (g Graph) DepthFirst(v, round int) (finish VertQueue) {
-    var T int
-    var s int
-    for _, e := range g {
-        switch round {
-        case 1:
-            vertex := e.head
-            arc := e.tail
-        case 2:
-            vertex := e.tail
-            arc := e.head
-        default:
-            log.Fatal("We should only ever be in round 1 or 2")
-        }
-    }
-    return
+func (g Graph) DepthFirstSCC(v int, c chan<- int) {
+
 }
 */

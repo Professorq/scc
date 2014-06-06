@@ -37,3 +37,13 @@ func TestQueue(t *testing.T) {
         }
     }
 }
+
+func TestGraphInit(t *testing.T) {
+    const last = 875714
+    g := NewGraphFromFile("SCC.text")
+    length := len(*g)
+    if length != last {
+        t.Logf("%v != %v", length, last)
+        t.Fail()
+    }
+}
