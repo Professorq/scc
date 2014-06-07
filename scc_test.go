@@ -29,7 +29,7 @@ func TestQueue(t *testing.T) {
                 t.Fail()
             }
         case 1:
-            e := expected[i / 2] 
+            e := expected[i / 2]
             if v != e {
                 t.Log("%v != %v", v, e)
                 t.Fail()
@@ -38,12 +38,47 @@ func TestQueue(t *testing.T) {
     }
 }
 
+/*
 func TestGraphInit(t *testing.T) {
     const last = 875714
-    g := NewGraphFromFile("SCC.text")
-    length := len(*g)
+    g := NewGraphFromFile("SCC.txt")
+    length := g.Len()
     if length != last {
         t.Logf("%v != %v", length, last)
         t.Fail()
     }
 }
+*/
+
+func TestPreventsSecondVisitToV(t *testing.T) {
+    g := NewGraph([]Edge{
+                            {1, 2},
+                            {2, 3},
+                        })
+    first := g.Visit(3)
+    second := g.Visit(3)
+    if !first || second {
+        t.Log("1st visit: %v, 2nd visit: %v", first, second)
+        t.Fail()
+    }
+}
+
+/*
+    e := []Edge{
+            {1, 2},
+            {1, 3},
+            {1, 4},
+            {1, 5},
+            {1, 6},
+            {2, 3},
+            {2, 4},
+            {2, 5},
+            {2, 6},
+            {3, 4},
+            {3, 5},
+            {3, 6},
+            {4, 5},
+            {4, 6},
+            {5, 6},
+        }
+        */

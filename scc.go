@@ -20,12 +20,15 @@ type Graph struct {
     vertices map[int]bool
 }
 
-func NewGraph(e []Edges) *Graph {
+func NewGraph(e []Edge) *Graph {
     g := new(Graph)
+    g.vertices = make(map[int]bool)
     g.edges = e
     for _, v := range e {
-        g.vertices[v] = false
+        g.vertices[v.tail] = false
+        g.vertices[v.head] = false
     }
+    return g
 }
 
 func NewGraphFromFile(fn string) *Graph {
@@ -33,25 +36,41 @@ func NewGraphFromFile(fn string) *Graph {
     return NewGraph(e)
 }
 
+func (g *Graph) Len() int {
+    return len(g.vertices)
+}
+
+func (g *Graph) Visit(v int) bool {
+    visited, in := g.vertices[v]
+    if !in {
+        log.Fatalf("%v not in Graph", v)
+    }
+    if !visited {
+        g.vertices[v] = true
+    }
+    return !visited
+}
+
 func EdgeListFromFile(fn string) (e []Edge) {
     f, err := os.Open(fn)
-    eof := false
-    for _, line, err := range bufio.ScanLines(f, eof) {
-        if err != nil {
-            eof = true
-        }
-        t, h := strings.split(line, " ")
-        t, err = strconv.Atoi(t)
-        h, err = strconv.Atoi(h)
-        e = append(e, {tail: t,
-                       head: h,
-                      }
-                  )
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer f.Close()
+    scanner := bufio.NewScanner(f)
+    for scanner.Scan() {
+        line := scanner.Text()
+        words := strings.Split(string(line), " ")
+        t, h := words[0], words[1]
+        tail, err := strconv.Atoi(t)
+        head, err := strconv.Atoi(h)
+        e = append(e, Edge{tail: tail, head: head})
         if err != nil {
             log.Print(err)
         }
         err = nil
     }
+    return
 }
 
 // VertQueue is a simple FIFO queue of vertex references
@@ -76,14 +95,15 @@ func (g *Graph) FindSCC() (s []Graph) {
     // If it's visited, it's in the finish map with value 0.
     // If it's finished (i.e. all arcs have been explored),
     // the value of finish[int] == the rank of finishing
-    q := g.DepthFirstRev()
+    // q := g.DepthFirstRev()
     // Finish times order is encoded in order of the queue.
     return
 }
 
-func (g Graph) DepthFirstRev() (q VertQueue){
-    q = make(VerQueue, len(g)
-    for _, e := range g {
+/*
+func (g *Graph) DepthFirstRev() (q VertQueue){
+    q = make(VertQueue, g.Len())
+    for _, e := range g.edges {
         vertex := e.head
         arc := e.tail
     }
