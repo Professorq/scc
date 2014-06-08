@@ -117,7 +117,7 @@ func TestTraverseExhaustsVertices(t *testing.T) {
     }
 }
 
-func TestRingIsOneSCC(t *testing.T) {
+func TestRingIsFiveSCC(t *testing.T) {
     const expected = 5
     g := NewGraph(e)
     result := g.CountSCC()
