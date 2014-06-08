@@ -81,9 +81,7 @@ func TestPreventsSecondVisitToV(t *testing.T) {
     }
 }
 
-func TestTraverseExhaustsVertices(t *testing.T) {
-    var finish = []int{6, 5, 4, 3, 2, 1}
-    e := []Edge{
+var e = []Edge{
             {1, 2},
             {1, 3},
             {1, 4},
@@ -99,7 +97,10 @@ func TestTraverseExhaustsVertices(t *testing.T) {
             {4, 5},
             {4, 6},
             {5, 6},
-        }
+}
+
+func TestTraverseExhaustsVertices(t *testing.T) {
+    var finish = []int{6, 5, 4, 3, 2, 1}
     g := NewGraph(e)
     s := g.Traverse(false)
     for i, v := range finish {
@@ -116,3 +117,12 @@ func TestTraverseExhaustsVertices(t *testing.T) {
     }
 }
 
+func TestRingIsOneSCC(t *testing.T) {
+    const expected = 5
+    g := NewGraph(e)
+    result := g.CountSCC()
+    if result != expected {
+        t.Logf("%v == %v", result, expected)
+        t.Fail()
+    }
+}

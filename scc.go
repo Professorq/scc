@@ -50,6 +50,12 @@ func (g *Graph) Len() int {
     return len(g.vertices)
 }
 
+func (g *Graph) Reset() {
+    for i := range g.vertices {
+        g.vertices[i] = false
+    }
+}
+
 func (g *Graph) Visit(v int) bool {
     visited, in := g.vertices[v]
     if !in {
@@ -85,13 +91,10 @@ func EdgeListFromFile(fn string) (e []Edge) {
 
 /*
 type Queue []int
-
 func (v Queue) Len() int { return len(v) }
-
 func (v *Queue) Push(x int) {
     *v = append(*v, x)
 }
-
 func (v *Queue) Pop() int {
     old := *v
     n := len(old)
@@ -106,7 +109,16 @@ type Stack struct {
     pos int
 }
 
-func (s *Stack) Len() int { return len(s.items) }
+func (s *Stack) Len() int { return s.pos + 1}
+func (s *Stack) Head() (h int, err error) {
+    if s.pos > 0 {
+        h = s.items[0]
+    } else {
+        err = errors.New("Stack is empty")
+    }
+    return
+}
+
 func (s *Stack) Push(x int) {
     s.pos  += 1
     if s.items == nil {
@@ -128,14 +140,12 @@ func (s *Stack) Pop() (x int, err error){
     return
 }
 
-// FindSCC locates all Stongly connected components in an input graph
-func (g *Graph) FindSCC() (s []Graph) {
-    // Map keeps track of all vertices that have been visited.
-    // If it's finished (i.e. all arcs have been explored),
-    // the index of the vertex in Stack == the rank of finishing
-    // q := g.DepthFirstRev()
-    // Finish times order is encoded in order of the stack.
-    return
+// FindSCC locates all stongly connected components in a graph
+func (g *Graph) CountSCC() (c int) {
+    s := g.Traverse(true)
+    g.Reset()
+    leaders := g.SecondPass(s)
+    return len(leaders)
 }
 
 func (g *Graph) Traverse(r bool) (s *Stack){
@@ -147,11 +157,26 @@ func (g *Graph) Traverse(r bool) (s *Stack){
     return
 }
 
-func (g *Graph) VisitEdges(p int, s *Stack, r bool) {
+func (g *Graph) SecondPass(s *Stack) (f []int) {
+    for {
+        vertex, err := s.Pop()
+        if err != nil {
+            break
+        }
+        s := new(Stack)
+        if g.Visit(vertex) {
+            f = append(f, vertex)
+        }
+        g.VisitEdges(vertex, s, false)
+    }
+    return
+}
+
+func (g *Graph) VisitEdges(p int, s *Stack, reverse bool) {
     for _, e := range g.edges {
-        v, w := e.Arc(r)
+        v, w := e.Arc(reverse)
         if v == p && g.Visit(v) {
-            g.VisitEdges(w, s, r)
+            g.VisitEdges(w, s, reverse)
             s.Push(v)
         }
     }
