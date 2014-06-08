@@ -4,9 +4,10 @@ import (
     "testing"
 )
 
+/*
 func TestQueue(t *testing.T) {
     expected := []int{1, 4, 9, 16, 25, 36, 49, 64, 81, 100}
-    q := make(VertQueue, 0, 20)
+    q := make(Queue, 0, 20)
     for i, s := range expected {
         q.Push(i)
         q.Push(s)
@@ -37,6 +38,23 @@ func TestQueue(t *testing.T) {
         }
     }
 }
+*/
+
+func TestStack(t *testing.T) {
+    const input = 8
+    s := new(Stack)
+    s.Push(input)
+    a, err := s.Pop()
+    if a != input || err != nil {
+        t.Logf("%v != %v or err: %v", input, a, err)
+        t.Fail()
+    }
+    b, err := s.Pop()
+    if b != 0 || err == nil {
+        t.Logf("%v != %v or err is nil: %v", 0, a, err)
+        t.Fail()
+    }
+}
 
 /*
 func TestGraphInit(t *testing.T) {
@@ -63,7 +81,8 @@ func TestPreventsSecondVisitToV(t *testing.T) {
     }
 }
 
-/*
+func TestTraverseExhaustsVertices(t *testing.T) {
+    var finish = []int{6, 5, 4, 3, 2, 1}
     e := []Edge{
             {1, 2},
             {1, 3},
@@ -81,4 +100,19 @@ func TestPreventsSecondVisitToV(t *testing.T) {
             {4, 6},
             {5, 6},
         }
-        */
+    g := NewGraph(e)
+    s := g.Traverse(false)
+    for i, v := range finish {
+        a, err := s.Pop()
+        if err != nil && i != len(finish) - 1 {
+            t.Logf("e: %v. %v == %v", err, i, len(finish))
+            t.Fail()
+        } else if err != nil {
+            // do nothing
+        } else if a != v {
+                t.Logf("%v == %v", a, v)
+                t.Fail()
+        }
+    }
+}
+
