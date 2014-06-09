@@ -79,22 +79,39 @@ func TestRingIsFiveSCC(t *testing.T) {
     }
 }
 
+var f = []Edge{
+            {9, 7},
+            {9, 3},
+            {8, 6},
+            {8, 5},
+            {7, 1},
+            {4, 7},
+            {1, 4},
+            {3, 6},
+            {6, 9},
+            {5, 2},
+            {2, 8},
+        }
+
+func TestLargest3are3(t *testing.T) {
+    const exp = 3
+    g := NewGraph(f)
+    g.CountSCC()
+    threes := g.LargestSizes(3)
+    for _, v := range threes {
+        if v != exp {
+            t.Logf("%v == %v", v, exp)
+            t.Fail()
+        }
+    }
+    if t.Failed() {
+        t.Log(g.Components())
+    }
+}
+
 func TestFinds5SCC(t *testing.T) {
     const expected = 3
-    e := []Edge{
-            {1, 5},
-            {2, 3},
-            {3, 4},
-            {4, 5},
-            {4, 2},
-            {5, 6},
-            {6, 1},
-            {6, 9},
-            {9, 7},
-            {7, 8},
-            {8, 9},
-        }
-    g := NewGraph(e)
+    g := NewGraph(f)
     result := g.CountSCC()
     if result != expected {
         t.Logf("%v == %v", result, expected)

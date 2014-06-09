@@ -146,7 +146,7 @@ func (g *Graph) CountSCC() (c int) {
         }
     }
     // log.Print(leaders)
-    // log.Print(g.vertices)
+    log.Print(g.vertices)
     return len(leaders)
 }
 
@@ -180,7 +180,7 @@ func (g *Graph) SecondPass(s *Stack) {
         if err != nil {
             break
         }
-        g.VisitEdges(vertex, s.Len(), t)
+        g.VisitEdges(vertex, vertex, t)
     }
     return
 }
@@ -191,8 +191,43 @@ func (g *Graph) VisitEdges(v, src int, s *Stack) {
         if ok {
             for _, w := range edges {
                 g.VisitEdges(w, src, s)
-                s.Push(v)
+            }
+            s.Push(v)
+        } else {
+            // log.Printf("Terminal vertex: %v", v)
+        }
+    }
+}
+
+func (g *Graph) Components() map[int][]int {
+    m := make(map[int][]int)
+    for v, src := range g.vertices {
+        list, ok := m[src]
+        if ok {
+            m[src] = append(list, v)
+        } else {
+            m[src] = []int{v}
+        }
+    }
+    return m
+}
+
+func (g *Graph) LargestSizes(n int) []int {
+    l := make([]int, n, n)
+    for _, c := range g.Components() {
+        length := len(c)
+        for i, old := range l {
+            if length > old {
+                if i == 0 {
+                    l = append([]int{length}, l[:n-1]...)
+                } else if i == len(l) - 1 {
+                    l[i] = length
+                } else {
+                    l = append(append(l[:i-1], length), l[i:n-1]...)
+                }
+                break
             }
         }
     }
+    return l
 }
