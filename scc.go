@@ -17,9 +17,9 @@ type Edge struct {
 
 func (e Edge) Arc(r bool) (v, w int) {
     if r {
-        v, w = e.tail, e.head
-    } else {
         v, w = e.head, e.tail
+    } else {
+        v, w = e.tail, e.head
     }
     return
 }
@@ -27,16 +27,16 @@ func (e Edge) Arc(r bool) (v, w int) {
 // Graphs are simply lists of directed edges
 type Graph struct {
     edges []Edge
-    vertices map[int]bool
+    vertices map[int]int
 }
 
 func NewGraph(e []Edge) *Graph {
     g := new(Graph)
-    g.vertices = make(map[int]bool)
+    g.vertices = make(map[int]int)
     g.edges = e
     for _, v := range e {
-        g.vertices[v.tail] = false
-        g.vertices[v.head] = false
+        g.vertices[v.tail] = 0
+        g.vertices[v.head] = 0
     }
     return g
 }
@@ -52,19 +52,20 @@ func (g *Graph) Len() int {
 
 func (g *Graph) Reset() {
     for i := range g.vertices {
-        g.vertices[i] = false
+        g.vertices[i] = 0
     }
 }
 
-func (g *Graph) Visit(v int) bool {
+func (g *Graph) Visit(v, src int) bool {
     visited, in := g.vertices[v]
     if !in {
         log.Fatalf("%v not in Graph", v)
     }
-    if !visited {
-        g.vertices[v] = true
+    if visited == 0 {
+        g.vertices[v] = src
+        return true
     }
-    return !visited
+    return false
 }
 
 func EdgeListFromFile(fn string) (e []Edge) {
@@ -88,21 +89,6 @@ func EdgeListFromFile(fn string) (e []Edge) {
     }
     return
 }
-
-/*
-type Queue []int
-func (v Queue) Len() int { return len(v) }
-func (v *Queue) Push(x int) {
-    *v = append(*v, x)
-}
-func (v *Queue) Pop() int {
-    old := *v
-    n := len(old)
-    x := old[0]
-    *v = old[1 : n - 1]
-    return x
-}
-*/
 
 type Stack struct {
     items []int
@@ -142,48 +128,56 @@ func (s *Stack) Pop() (x int, err error){
 
 // FindSCC locates all stongly connected components in a graph
 func (g *Graph) CountSCC() (c int) {
-    s := g.Traverse(true)
+    // log.Print(g.edges)
+    s := g.Traverse()
+    // log.Print(s)
+    // log.Print("++++++++")
     g.Reset()
-    leaders := g.SecondPass(s)
+    // log.Print(g.vertices)
+    g.SecondPass(s)
+    leaders := make(map[int]bool)
+    for _, l := range g.vertices {
+        _, ok := leaders[l]
+        if !ok && l > 0 {
+            leaders[l] = true
+        }
+    }
+    // log.Print(leaders)
+    // log.Print(g.vertices)
     return len(leaders)
 }
 
-func (g *Graph) Traverse(r bool) (s *Stack){
+func (g *Graph) Traverse() (s *Stack){
     s = new(Stack)
     for _, e := range g.edges {
-        v, _ := e.Arc(r)
-        g.VisitEdges(v, s, r)
+        v, _ := e.Arc(true)
+        g.VisitEdges(v, 1, s, true)
     }
     return
 }
 
-func (g *Graph) SecondPass(s *Stack) (f []int) {
+func (g *Graph) SecondPass(s *Stack) {
+    t := new(Stack)
     for {
         vertex, err := s.Pop()
         if err != nil {
             break
         }
-        s := new(Stack)
-        if g.Visit(vertex) {
-            f = append(f, vertex)
-        }
-        g.VisitEdges(vertex, s, false)
+        g.VisitEdges(vertex, s.Len(), t, false)
     }
     return
 }
 
-func (g *Graph) VisitEdges(p int, s *Stack, reverse bool) {
+func (g *Graph) VisitEdges(p, order int, s *Stack, reverse bool) {
+    // log.Print(p, order, reverse)
     for _, e := range g.edges {
         v, w := e.Arc(reverse)
-        if v == p && g.Visit(v) {
-            g.VisitEdges(w, s, reverse)
+        src := order
+        if v == p && g.Visit(v, src) {
+            // log.Printf("%v -> %v", v, w)
+            g.VisitEdges(w, order, s, reverse)
             s.Push(v)
         }
     }
+    // log.Print("-------")
 }
-
-/*
-func (g Graph) DepthFirstSCC(v int, c chan<- int) {
-
-}
-*/
