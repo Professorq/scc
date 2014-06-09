@@ -28,11 +28,13 @@ func (e Edge) Arc(r bool) (v, w int) {
 type Graph struct {
     edges []Edge
     vertices map[int]int
+    adjacent map[int][]int
 }
 
 func NewGraph(e []Edge) *Graph {
     g := new(Graph)
     g.vertices = make(map[int]int)
+    g.adjacent = make(map[int][]int)
     g.edges = e
     for _, v := range e {
         g.vertices[v.tail] = 0
@@ -54,6 +56,7 @@ func (g *Graph) Reset() {
     for i := range g.vertices {
         g.vertices[i] = 0
     }
+    g.adjacent = make(map[int][]int)
 }
 
 func (g *Graph) Visit(v, src int) bool {
@@ -148,36 +151,48 @@ func (g *Graph) CountSCC() (c int) {
 }
 
 func (g *Graph) Traverse() (s *Stack){
+    g.BuildAdjacencyList(true)
     s = new(Stack)
     for _, e := range g.edges {
         v, _ := e.Arc(true)
-        g.VisitEdges(v, 1, s, true)
+        g.VisitEdges(v, 1, s)
     }
     return
 }
 
+func (g *Graph) BuildAdjacencyList(reverse bool) {
+    for _, e := range g.edges {
+        v, w := e.Arc(reverse)
+        heads, ok := g.adjacent[v]
+        if ok {
+            g.adjacent[v] = append(heads)
+        } else {
+            g.adjacent[v] = []int{w}
+        }
+    }
+}
+
 func (g *Graph) SecondPass(s *Stack) {
+    g.BuildAdjacencyList(false)
     t := new(Stack)
     for {
         vertex, err := s.Pop()
         if err != nil {
             break
         }
-        g.VisitEdges(vertex, s.Len(), t, false)
+        g.VisitEdges(vertex, s.Len(), t)
     }
     return
 }
 
-func (g *Graph) VisitEdges(p, order int, s *Stack, reverse bool) {
-    // log.Print(p, order, reverse)
-    for _, e := range g.edges {
-        v, w := e.Arc(reverse)
-        src := order
-        if v == p && g.Visit(v, src) {
-            // log.Printf("%v -> %v", v, w)
-            g.VisitEdges(w, order, s, reverse)
-            s.Push(v)
+func (g *Graph) VisitEdges(v, src int, s *Stack) {
+    if g.Visit(v, src) {
+        edges, ok := g.adjacent[v]
+        if ok {
+            for _, w := range edges {
+                g.VisitEdges(w, src, s)
+                s.Push(v)
+            }
         }
     }
-    // log.Print("-------")
 }

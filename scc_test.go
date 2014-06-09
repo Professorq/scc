@@ -70,7 +70,7 @@ func TestTraverseExhaustsVertices(t *testing.T) {
 }
 
 func TestRingIsFiveSCC(t *testing.T) {
-    const expected = 4
+    const expected = 5
     g := NewGraph(e)
     result := g.CountSCC()
     if result != expected {
