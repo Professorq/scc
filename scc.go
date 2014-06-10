@@ -58,6 +58,10 @@ func (g *Graph) Reset() {
     }
 }
 
+func (g *Graph) Describe() {
+    log.Printf("Graph of %v vertices, %v edges", g.Len(), len(g.edges))
+}
+
 func (g *Graph) Visit(v, src int) bool {
     visited, in := g.vertices[v]
     if !in {
@@ -145,7 +149,7 @@ func (g *Graph) CountSCC() (c int) {
         }
     }
     // log.Print(leaders)
-    log.Print(g.vertices)
+    // log.Print(g.vertices)
     return len(leaders)
 }
 
@@ -154,7 +158,7 @@ func (g *Graph) Traverse() (s *Stack){
     s = new(Stack)
     for _, e := range g.edges {
         v, _ := e.Arc(true)
-        g.VisitEdges(v, 1, s)
+        g.VisitEdges(v, -1, s)
     }
     return
 }
@@ -214,8 +218,11 @@ func (g *Graph) Components() map[int][]int {
 
 func (g *Graph) LargestSizes(n int) []int {
     l := make([]int, n, n)
-    for _, c := range g.Components() {
+    for i, c := range g.Components() {
         length := len(c)
+        if length > 100000 {
+            log.Printf("%v has %v components?!?", i, length)
+        }
         for i, old := range l {
             if length > old {
                 if i == 0 {
@@ -223,9 +230,20 @@ func (g *Graph) LargestSizes(n int) []int {
                 } else if i == len(l) - 1 {
                     l[i] = length
                 } else {
-                    l = append(append(l[:i-1], length), l[i:n-1]...)
+                    larger, smaller := l[:i], l[i:n-1]
+                    if len(larger) + len(smaller) + 1 != n {
+                        log.Fatalf("larger: %v, length: %v, smaller: %v",
+                                   larger, length, smaller)
+                    }
+                    larger = append(larger, length)
+                    l = append(larger, smaller...)
                 }
                 break
+            }
+            // log.Printf("Insert %v @ %v", length, i)
+            if len(l) != n {
+                log.Print(l)
+                log.Fatalf("%v == %v", len(l), n)
             }
         }
     }
