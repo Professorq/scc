@@ -118,3 +118,13 @@ func TestFinds5SCC(t *testing.T) {
         t.Fail()
     }
 }
+
+func TestAdjacencyBuild(t *testing.T) {
+    g := NewGraph(e)
+    g.BuildAdjacencyList(false)
+    if len(g.adjacent[1]) != 5 {
+        t.Logf("%v == %v", g.adjacent[1], 5)
+        t.Log(g.adjacent)
+        t.Fail()
+    }
+}

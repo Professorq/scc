@@ -56,7 +56,6 @@ func (g *Graph) Reset() {
     for i := range g.vertices {
         g.vertices[i] = 0
     }
-    g.adjacent = make(map[int][]int)
 }
 
 func (g *Graph) Visit(v, src int) bool {
@@ -160,18 +159,6 @@ func (g *Graph) Traverse() (s *Stack){
     return
 }
 
-func (g *Graph) BuildAdjacencyList(reverse bool) {
-    for _, e := range g.edges {
-        v, w := e.Arc(reverse)
-        heads, ok := g.adjacent[v]
-        if ok {
-            g.adjacent[v] = append(heads)
-        } else {
-            g.adjacent[v] = []int{w}
-        }
-    }
-}
-
 func (g *Graph) SecondPass(s *Stack) {
     g.BuildAdjacencyList(false)
     t := new(Stack)
@@ -183,6 +170,19 @@ func (g *Graph) SecondPass(s *Stack) {
         g.VisitEdges(vertex, vertex, t)
     }
     return
+}
+
+func (g *Graph) BuildAdjacencyList(reverse bool) {
+    g.adjacent = make(map[int][]int)
+    for _, e := range g.edges {
+        v, w := e.Arc(reverse)
+        heads, ok := g.adjacent[v]
+        if ok {
+            g.adjacent[v] = append(heads, w)
+        } else {
+            g.adjacent[v] = []int{w}
+        }
+    }
 }
 
 func (g *Graph) VisitEdges(v, src int, s *Stack) {
