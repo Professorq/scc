@@ -25,6 +25,8 @@ func (e Edge) Arc(r bool) (v, w int) {
 }
 
 // Graphs are simply lists of directed edges
+// that maintain a map of visited edges
+// and a directed adjacency list.
 type Graph struct {
     edges []Edge
     vertices map[int]int
@@ -70,8 +72,9 @@ func (g *Graph) Visit(v, src int) bool {
     if visited == 0 {
         g.vertices[v] = src
         return true
+    } else {
+        return false
     }
-    return false
 }
 
 func EdgeListFromFile(fn string) (e []Edge) {
@@ -101,6 +104,10 @@ type Stack struct {
     pos int
 }
 
+func NewStack(c int) (*Stack) {
+    return &Stack{items: make([]int, 0, c), pos: 0}
+}
+
 func (s *Stack) Len() int { return s.pos + 1}
 func (s *Stack) Head() (h int, err error) {
     if s.pos > 0 {
@@ -112,7 +119,7 @@ func (s *Stack) Head() (h int, err error) {
 }
 
 func (s *Stack) Push(x int) {
-    s.pos  += 1
+    s.pos++
     if s.items == nil {
         s.items = []int{x}
     } else if s.pos < len(s.items) {
@@ -126,7 +133,7 @@ func (s *Stack) Pop() (x int, err error){
     if s.pos == 0 {
         err = errors.New("Stack is empty")
     } else {
-        s.pos -= 1
+        s.pos--
         x = s.items[s.pos]
     }
     return
@@ -155,7 +162,7 @@ func (g *Graph) CountSCC() (c int) {
 
 func (g *Graph) Traverse() (s *Stack){
     g.BuildAdjacencyList(true)
-    s = new(Stack)
+    s = NewStack(len(g.vertices))
     for _, e := range g.edges {
         v, _ := e.Arc(true)
         g.VisitEdges(v, -1, s)
@@ -165,7 +172,7 @@ func (g *Graph) Traverse() (s *Stack){
 
 func (g *Graph) SecondPass(s *Stack) {
     g.BuildAdjacencyList(false)
-    t := new(Stack)
+    t := NewStack(len(g.vertices))
     for {
         vertex, err := s.Pop()
         if err != nil {
@@ -196,10 +203,10 @@ func (g *Graph) VisitEdges(v, src int, s *Stack) {
             for _, w := range edges {
                 g.VisitEdges(w, src, s)
             }
-            s.Push(v)
         } else {
             // log.Printf("Terminal vertex: %v", v)
         }
+        s.Push(v)
     }
 }
 
@@ -218,29 +225,32 @@ func (g *Graph) Components() map[int][]int {
 
 func (g *Graph) LargestSizes(n int) []int {
     l := make([]int, n, n)
-    for i, c := range g.Components() {
-        length := len(c)
-        if length > 100000 {
-            log.Printf("%v has %v components?!?", i, length)
-        }
+    // log.Print(g.vertices)
+    // log.Print(g)
+    for _, c := range g.Components() {
+        size := len(c)
         for i, old := range l {
-            if length > old {
+            if size > old {
                 if i == 0 {
-                    l = append([]int{length}, l[:n-1]...)
+                    l = append([]int{size}, l[:n-1]...)
                 } else if i == len(l) - 1 {
-                    l[i] = length
+                    l[i] = size
                 } else {
                     larger, smaller := l[:i], l[i:n-1]
                     if len(larger) + len(smaller) + 1 != n {
-                        log.Fatalf("larger: %v, length: %v, smaller: %v",
-                                   larger, length, smaller)
+                        log.Fatalf("larger: %v, size: %v, smaller: %v",
+                                   larger, size, smaller)
                     }
-                    larger = append(larger, length)
+                    larger = append(larger, 0)
                     l = append(larger, smaller...)
+                    l[i] = size
+                    if len(l) != n {
+                        log.Fatalf("Fucked up the list %v", l)
+                    }
                 }
                 break
             }
-            // log.Printf("Insert %v @ %v", length, i)
+            // log.Printf("Insert %v @ %v", size, i)
             if len(l) != n {
                 log.Print(l)
                 log.Fatalf("%v == %v", len(l), n)

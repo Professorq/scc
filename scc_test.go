@@ -69,11 +69,12 @@ func TestTraverseExhaustsVertices(t *testing.T) {
     }
 }
 
-func TestRingIsFiveSCC(t *testing.T) {
-    const expected = 5
+func TestRingIs6SCC(t *testing.T) {
+    const expected = 6
     g := NewGraph(e)
     result := g.CountSCC()
     if result != expected {
+        t.Log(g.vertices)
         t.Logf("%v == %v", result, expected)
         t.Fail()
     }
@@ -109,7 +110,7 @@ func TestLargest3are3(t *testing.T) {
     }
 }
 
-func TestFinds5SCC(t *testing.T) {
+func TestFinds3SCC(t *testing.T) {
     const expected = 3
     g := NewGraph(f)
     result := g.CountSCC()
@@ -126,5 +127,22 @@ func TestAdjacencyBuild(t *testing.T) {
         t.Logf("%v == %v", g.adjacent[1], 5)
         t.Log(g.adjacent)
         t.Fail()
+    }
+}
+
+func TestJasonSemkosCase(t *testing.T) {
+    expected := []int{3, 3, 3, 0, 0}
+    g := NewGraphFromFile("jsemko.txt")
+    g.CountSCC()
+    ls := g.LargestSizes(5)
+    for i, l := range ls {
+        if expected[i] != l {
+            t.Fail()
+        }
+    }
+    if t.Failed() {
+        t.Log(expected)
+        t.Log(ls)
+        t.Log(g.Components())
     }
 }
