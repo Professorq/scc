@@ -214,3 +214,20 @@ func TestJasonSemkosCase5(t *testing.T) {
         t.Log(g.Components())
     }
 }
+
+func TestRougherCase(t *testing.T) {
+    expected := []int{6, 1, 1, 0, 0}
+    g := NewGraphFromFile("rough.txt")
+    g.CountSCC()
+    ls := g.LargestSizes(5)
+    for i, l := range ls {
+        if expected[i] != l {
+            t.Fail()
+        }
+    }
+    if t.Failed() {
+        t.Log(expected)
+        t.Log(ls)
+        t.Log(g.Components())
+    }
+}
