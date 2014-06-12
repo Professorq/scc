@@ -231,3 +231,20 @@ func TestRougherCase(t *testing.T) {
         t.Log(g.Components())
     }
 }
+
+func TestLastCase(t *testing.T) {
+    expected := []int{3, 2, 2, 2, 1}
+    g := NewGraphFromFile("last.txt")
+    g.CountSCC()
+    ls := g.LargestSizes(5)
+    for i, l := range ls {
+        if expected[i] != l {
+            t.Fail()
+        }
+    }
+    if t.Failed() {
+        t.Log(expected)
+        t.Log(ls)
+        t.Log(g.Components())
+    }
+}
