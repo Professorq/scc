@@ -146,3 +146,37 @@ func TestJasonSemkosCase(t *testing.T) {
         t.Log(g.Components())
     }
 }
+
+func TestJasonSemkosCase2(t *testing.T) {
+    expected := []int{3, 3, 2, 0, 0}
+    g := NewGraphFromFile("js2.txt")
+    g.CountSCC()
+    ls := g.LargestSizes(5)
+    for i, l := range ls {
+        if expected[i] != l {
+            t.Fail()
+        }
+    }
+    if t.Failed() {
+        t.Log(expected)
+        t.Log(ls)
+        t.Log(g.Components())
+    }
+}
+
+func TestJasonSemkosCase3(t *testing.T) {
+    expected := []int{3, 3, 1, 1, 0}
+    g := NewGraphFromFile("js3.txt")
+    g.CountSCC()
+    ls := g.LargestSizes(5)
+    for i, l := range ls {
+        if expected[i] != l {
+            t.Fail()
+        }
+    }
+    if t.Failed() {
+        t.Log(expected)
+        t.Log(ls)
+        t.Log(g.Components())
+    }
+}

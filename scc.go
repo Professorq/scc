@@ -236,14 +236,19 @@ func (g *Graph) LargestSizes(n int) []int {
                 } else if i == len(l) - 1 {
                     l[i] = size
                 } else {
-                    larger, smaller := l[:i], l[i:n-1]
+                    larger := l[:i]
+                    smalls := (n - i) - 1
+                    smaller := make([]int, smalls, smalls)
+                    for j := 0 ; j < smalls ; j++ {
+                        smaller[j] = l[j + i]
+                    }
                     if len(larger) + len(smaller) + 1 != n {
                         log.Fatalf("larger: %v, size: %v, smaller: %v",
                                    larger, size, smaller)
                     }
-                    larger = append(larger, 0)
+                    larger = append(larger, size)
                     l = append(larger, smaller...)
-                    l[i] = size
+                    // l[i] = size
                     if len(l) != n {
                         log.Fatalf("Fucked up the list %v", l)
                     }
